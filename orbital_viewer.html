@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbitales Atomiques</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#e8e8e5; --ink:#111; --sub:#888; --line:#d4d4d0; --accent:#111; }
+
+html,body { height:100%; background:var(--bg); color:var(--ink); font-family:'DM Mono',monospace; }
+body { display:grid; grid-template-columns:270px 1fr; height:100vh; overflow:hidden; }
+
+/* ── Sidebar ── */
+aside {
+  border-right:1px solid var(--line);
+  display:flex; flex-direction:column;
+  padding:28px 22px; overflow-y:auto; gap:0;
+  background:var(--bg);
+}
+.title { font-family:'DM Serif Display',serif; font-size:18px; line-height:1.25; margin-bottom:3px; }
+.sub   { font-size:9px; color:var(--sub); letter-spacing:.14em; text-transform:uppercase; margin-bottom:30px; }
+
+.block { padding:16px 0; border-top:1px solid var(--line); }
+.lbl   { font-size:8px; text-transform:uppercase; letter-spacing:.15em; color:var(--sub); margin-bottom:10px; }
+
+/* Atom display */
+.atom-card {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 12px;
+  border:1px solid var(--line); border-radius:3px;
+  cursor:pointer; transition:border-color .13s;
+  user-select:none;
+  background:var(--bg);
+}
+.atom-card:hover { border-color:var(--ink); }
+.atom-symbol {
+  font-family:'DM Serif Display',serif; font-size:26px;
+  line-height:1; min-width:36px; text-align:center;
+}
+.atom-info { display:flex; flex-direction:column; gap:2px; }
+.atom-name  { font-size:11px; }
+.atom-Z     { font-size:9px; color:var(--sub); }
+.atom-config { font-size:9px; color:var(--sub); margin-top:4px; line-height:1.5; }
+
+/* Orbitals tags */
+.orb-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.orb-tag {
+  font-size:10px; padding:3px 9px;
+  border:1px solid var(--line); border-radius:2px;
+  display:flex; align-items:center; gap:5px;
+}
+.orb-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+/* Slider */
+.sr { display:flex; justify-content:space-between; font-size:9px; color:var(--sub); margin-bottom:7px; }
+.sr strong { color:var(--ink); font-weight:400; }
+input[type=range] {
+  -webkit-appearance:none; width:100%; height:1px;
+  background:var(--line); outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:9px; height:9px; background:var(--ink); border-radius:50%;
+}
+
+/* Legend */
+.legend-bar { width:100%; height:5px; border-radius:3px; background:linear-gradient(to right,#1a237e,#1565c0,#00897b,#f9a825,#e53935); }
+.legend-labels { display:flex; justify-content:space-between; font-size:8px; color:var(--sub); margin-top:3px; }
+
+/* URL */
+.url-inp {
+  width:100%; border:1px solid var(--line); background:transparent;
+  color:var(--ink); font-family:'DM Mono',monospace; font-size:9px;
+  padding:6px 8px; border-radius:2px; outline:none;
+}
+.url-inp:focus { border-color:var(--ink); }
+
+/* Stats */
+.stats { display:grid; grid-template-columns:1fr 1fr; }
+.stat { padding:8px 0 5px; border-top:1px solid var(--line); }
+.stat .v { font-family:'DM Serif Display',serif; font-size:16px; line-height:1; }
+.stat .l { font-size:7px; color:var(--sub); text-transform:uppercase; letter-spacing:.12em; margin-top:2px; }
+
+/* Histo */
+.histo { display:flex; flex-direction:column; gap:4px; }
+.hr { display:grid; grid-template-columns:50px 1fr 26px; align-items:center; gap:7px; font-size:8px; color:var(--sub); }
+.bb { height:1px; background:var(--line); overflow:hidden; }
+.bf { height:100%; background:var(--ink); transition:width .6s cubic-bezier(.4,0,.2,1); }
+.hn { text-align:right; color:var(--ink); }
+
+/* Layer visibility toggles */
+.layer-row {
+  display:flex; align-items:center; gap:8px;
+  padding:5px 8px; border:1px solid var(--line); border-radius:2px;
+  cursor:pointer; transition:all .13s; user-select:none;
+}
+.layer-row:hover { border-color:var(--ink); }
+.layer-row.hidden-layer { opacity:.38; }
+.layer-check {
+  width:12px; height:12px; border:1px solid currentColor;
+  border-radius:2px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-size:9px;
+}
+.layer-name { font-size:10px; flex:1; }
+.layer-count { font-size:8px; color:var(--sub); }
+.foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:6px; }
+.btn-main {
+  width:100%; background:var(--ink); color:#fff; border:none;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em;
+  text-transform:uppercase; padding:11px; cursor:pointer; border-radius:2px; transition:opacity .13s;
+}
+.btn-main:hover { opacity:.7; }
+.btn-main:disabled { opacity:.25; cursor:not-allowed; }
+.btn-sec {
+  width:100%; background:transparent; color:var(--ink);
+  border:1px solid var(--line); font-family:'DM Mono',monospace;
+  font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  padding:10px; cursor:pointer; border-radius:2px; transition:all .13s;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+}
+.btn-sec:hover { border-color:var(--ink); }
+.btn-sec.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+.btn-sec:disabled { opacity:.25; cursor:not-allowed; }
+#coupe-block { display:none; }
+#coupe-block.visible { display:block; }
+.err { margin-top:2px; font-size:8px; color:#b0291e; line-height:1.55; display:none; }
+
+/* ── Canvas area ── */
+main { position:relative; overflow:hidden; }
+#c { width:100%; height:100%; display:block; }
+#loader {
+  position:absolute; inset:0; background:rgba(232,232,229,.88);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:var(--sub);
+  transition:opacity .25s;
+}
+#loader.hidden { opacity:0; pointer-events:none; }
+.spinner {
+  width:20px; height:20px; border:1.5px solid var(--line);
+  border-top-color:var(--ink); border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.hint { position:absolute; bottom:14px; right:16px; font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:#b0b0aa; pointer-events:none; }
+.badge { position:absolute; top:16px; left:16px; font-family:'DM Serif Display',serif; font-style:italic; font-size:28px; color:#d4d4cf; pointer-events:none; display:none; }
+
+/* ── Tableau button (top-right of canvas) ── */
+#btn-tableau {
+  position:absolute; top:16px; right:16px;
+  background:var(--bg); border:1px solid var(--line); color:var(--ink);
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em;
+  text-transform:uppercase; padding:7px 13px; cursor:pointer;
+  border-radius:2px; transition:all .13s; z-index:5;
+}
+#btn-tableau:hover { border-color:var(--ink); }
+
+/* ── Periodic table overlay ── */
+#overlay {
+  position:absolute; inset:0; background:rgba(232,232,229,.97);
+  display:none; flex-direction:column;
+  padding:28px 24px; z-index:20; overflow:auto;
+}
+#overlay.open { display:flex; }
+.overlay-header {
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin-bottom:20px;
+}
+.overlay-title { font-family:'DM Serif Display',serif; font-size:17px; }
+.overlay-sub   { font-size:8px; color:var(--sub); letter-spacing:.12em; text-transform:uppercase; }
+#btn-close {
+  background:transparent; border:none; cursor:pointer;
+  font-size:18px; color:var(--sub); line-height:1; padding:2px 4px;
+}
+#btn-close:hover { color:var(--ink); }
+
+/* Periodic table grid */
+.pt-grid {
+  display:grid;
+  grid-template-columns: repeat(18, 1fr);
+  gap:4px;
+  max-width:900px;
+}
+.pt-cell {
+  aspect-ratio:1;
+  border:1px solid var(--line);
+  border-radius:2px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  cursor:pointer; transition:all .13s;
+  padding:2px;
+  min-width:0;
+  background:var(--bg);
+}
+.pt-cell:hover { border-color:var(--ink); background:#dededb; }
+.pt-cell.selected { background:var(--ink); border-color:var(--ink); color:#fff; }
+.pt-cell.empty { border-color:transparent; cursor:default; pointer-events:none; }
+.pt-z    { font-size:6px; color:var(--sub); line-height:1; align-self:flex-start; padding-left:2px; }
+.pt-sym  { font-family:'DM Serif Display',serif; font-size:13px; line-height:1.1; }
+.pt-cell.selected .pt-z { color:rgba(255,255,255,.6); }
+.pt-name { font-size:5.5px; color:var(--sub); text-align:center; line-height:1; margin-top:1px; overflow:hidden; white-space:nowrap; }
+.pt-cell.selected .pt-name { color:rgba(255,255,255,.6); }
+
+.pt-legend { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; }
+.pt-legend-item { display:flex; align-items:center; gap:5px; font-size:8px; color:var(--sub); }
+.pt-legend-dot  { width:8px; height:8px; border-radius:50%; }
+
+/* Orbital color palette */
+.c-1s  { background:#3b82f6; }
+.c-2s  { background:#10b981; }
+.c-2pz { background:#f59e0b; }
+.c-3s  { background:#ef4444; }
+.c-3pz { background:#8b5cf6; }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="title">Orbitales<br>Atomiques</div>
+  <div class="sub">Hydrogène → Argon</div>
+
+  <!-- Atom selector -->
+  <div class="block">
+    <div class="lbl">Atome sélectionné</div>
+    <div class="atom-card" id="atom-card" onclick="openTableau()">
+      <div class="atom-symbol" id="card-sym">H</div>
+      <div class="atom-info">
+        <div class="atom-name" id="card-name">Hydrogène</div>
+        <div class="atom-Z" id="card-z">Z = 1</div>
+      </div>
+    </div>
+    <div class="atom-config" id="card-config">1s¹</div>
+  </div>
+
+  <!-- Orbitals to display -->
+  <div class="block" id="orb-block">
+    <div class="lbl">Orbitales à afficher</div>
+    <div class="orb-tags" id="orb-tags"></div>
+  </div>
+
+  <!-- Debug: per-layer visibility -->
+  <div class="block" id="debug-block" style="display:none">
+    <div class="lbl" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Visibilité par couche</span>
+      <button onclick="toggleAllLayers()" id="btn-all-layers" style="font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;background:transparent;border:1px solid var(--line);color:var(--sub);padding:2px 7px;cursor:pointer;border-radius:2px">tout</button>
+    </div>
+    <div id="layer-toggles" style="display:flex;flex-direction:column;gap:5px;margin-top:4px"></div>
+  </div>
+
+  <!-- Points -->
+  <div class="block">
+    <div class="lbl">Points par orbitale</div>
+    <div class="sr"><span>200</span><strong id="nv">1 500</strong><span>8 000</span></div>
+    <input type="range" id="ns" min="200" max="8000" step="100" value="1500">
+  </div>
+
+  <!-- Color mode toggle + legend -->
+  <div class="block">
+    <div class="lbl">Mode de couleur</div>
+    <div style="display:flex;gap:5px;margin-bottom:10px">
+      <button class="btn-sec active" id="btn-color-dist" onclick="setColorMode('distance')" style="flex:1;padding:7px 4px;font-size:9px">
+        ◉ Distance
+      </button>
+      <button class="btn-sec" id="btn-color-layer" onclick="setColorMode('layer')" style="flex:1;padding:7px 4px;font-size:9px">
+        ○ Couche
+      </button>
+    </div>
+    <!-- Legend distance -->
+    <div id="legend-distance">
+      <div class="legend-bar"></div>
+      <div class="legend-labels"><span>proche</span><span>loin</span></div>
+    </div>
+    <!-- Legend layer -->
+    <div id="legend-layer" style="display:none">
+      <div class="orb-tags" id="legend-layer-tags"></div>
+    </div>
+  </div>
+
+  <!-- Servers -->
+  <div class="block">
+    <div class="lbl">Serveur orbitales (port 5000)</div>
+    <input class="url-inp" id="url-orb" value="http://localhost:5000">
+    <div style="margin-top:6px">
+      <div class="lbl" style="margin-bottom:4px">Serveur atomes (port 5001)</div>
+      <input class="url-inp" id="url-atom" value="http://localhost:5001">
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="block" id="sb" style="display:none">
+    <div class="lbl">Résultats</div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="sp">–</div><div class="l">points total</div></div>
+      <div class="stat"><div class="v" id="sm">–</div><div class="l">ms</div></div>
+    </div>
+  </div>
+
+  <!-- Histo -->
+  <div class="block" id="hb" style="display:none">
+    <div class="lbl">Distribution radiale (a₀)</div>
+    <div class="histo" id="histo"></div>
+  </div>
+
+  <div class="foot">
+    <button class="btn-main" id="btn">Générer</button>
+    <button class="btn-sec" id="btn-coupe" disabled>
+      <span id="coupe-icon">⊘</span> Coupe transversale
+    </button>
+    <div id="coupe-block">
+      <div class="sr" style="margin-top:7px"><span>plan z =</span><strong id="coupe-val">0.0</strong><span> a₀</span></div>
+      <input type="range" id="coupe-slider" min="-5" max="5" step="0.1" value="0">
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+</aside>
+
+<main>
+  <canvas id="c"></canvas>
+  <div id="loader" class="hidden">
+    <div class="spinner"></div>
+    <span id="loader-txt">Calcul en cours…</span>
+  </div>
+  <button id="btn-tableau" onclick="openTableau()">⬡ Tableau</button>
+  <div class="hint">clic : rotation · molette : zoom</div>
+  <div class="badge" id="badge"></div>
+
+  <!-- Periodic table overlay -->
+  <div id="overlay">
+    <div class="overlay-header">
+      <div>
+        <div class="overlay-title">Tableau périodique</div>
+        <div class="overlay-sub">Atomes modélisés — Z = 1 à 18</div>
+      </div>
+      <button id="btn-close" onclick="closeTableau()">✕</button>
+    </div>
+    <div class="pt-grid" id="pt-grid"></div>
+    <div class="pt-legend">
+      <div class="pt-legend-item"><div class="pt-legend-dot c-1s"></div>sous-couche 1s</div>
+      <div class="pt-legend-item"><div class="pt-legend-dot c-2s"></div>sous-couche 2s</div>
+      <div class="pt-legend-item"><div class="pt-legend-dot c-2pz"></div>sous-couche 2p</div>
+      <div class="pt-legend-item"><div class="pt-legend-dot c-3s"></div>sous-couche 3s</div>
+      <div class="pt-legend-item"><div class="pt-legend-dot c-3pz"></div>sous-couche 3p</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Three.js ──────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0xe8e8e5, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 1e-14, 1e-7);
+let sph = { theta:0.5, phi:1.1, r:4e-10 };
+function camUpdate() {
+  camera.position.set(
+    sph.r*Math.sin(sph.phi)*Math.sin(sph.theta),
+    sph.r*Math.cos(sph.phi),
+    sph.r*Math.sin(sph.phi)*Math.cos(sph.theta)
+  );
+  camera.lookAt(0,0,0);
+}
+camUpdate();
+
+// Nucleus
+scene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(4e-12,12,12),
+  new THREE.MeshBasicMaterial({color:0x222222})
+));
+// Axes
+[[new THREE.Vector3(3e-10,0,0)],[new THREE.Vector3(0,3e-10,0)],[new THREE.Vector3(0,0,3e-10)]].forEach(([v])=>{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),v]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xc4c4c0})));
+});
+
+// Color gradient (blue→teal→amber→red by distance)
+function distColor(t) {
+  const stops=[[0.102,0.137,0.494],[0.086,0.396,0.753],[0.000,0.537,0.482],[0.976,0.659,0.145],[0.898,0.224,0.208]];
+  const s=t*(stops.length-1), i=Math.min(Math.floor(s),stops.length-2), f=s-i;
+  const a=stops[i],b=stops[i+1];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+
+// Per-orbital tint colors (subtle hue shift on top of distance gradient)
+const ORB_TINT = {
+  '1s':  [0.23, 0.51, 1.0],
+  '2s':  [0.06, 0.73, 0.51],
+  '2pz': [0.96, 0.62, 0.17],
+  '3s':  [0.94, 0.27, 0.27],
+  '3pz': [0.55, 0.36, 0.96],
+};
+const ORB_CSS = { '1s':'#0061FF','2s':'#00FFA9','2pz':'#FFA000','3s':'#FF0000','3pz':'#824FFF' };
+
+// Store all point clouds per orbital
+let meshes = [];
+let allData = []; // [{positions, z, r_norm, orbital}]
+let coupeActive = false, coupeZ = 0;
+window._a0 = 5.29e-11;
+let colorMode = 'distance'; // 'distance' | 'layer'
+
+function setColorMode(mode) {
+  colorMode = mode;
+  document.getElementById('btn-color-dist').classList.toggle('active', mode==='distance');
+  document.getElementById('btn-color-layer').classList.toggle('active', mode==='layer');
+  document.getElementById('legend-distance').style.display = mode==='distance' ? '' : 'none';
+  document.getElementById('legend-layer').style.display    = mode==='layer'    ? '' : 'none';
+  renderAll();
+}
+
+// Layer visibility state: orbital key → boolean
+let layerVisible = {};
+
+function buildLayerToggles() {
+  const block = document.getElementById('debug-block');
+  const container = document.getElementById('layer-toggles');
+  container.innerHTML = '';
+
+  if (allData.length === 0) { block.style.display = 'none'; return; }
+  block.style.display = '';
+
+  allData.forEach(d => {
+    const orb = d.orbital;
+    if (!(orb in layerVisible)) layerVisible[orb] = true;
+    const color = ORB_CSS[orb] || '#888';
+    const n = d.positions.length / 3;
+
+    const row = document.createElement('div');
+    row.className = 'layer-row' + (layerVisible[orb] ? '' : ' hidden-layer');
+    row.dataset.orb = orb;
+    row.innerHTML = `
+      <div class="layer-check" style="color:${color};border-color:${color}">
+        ${layerVisible[orb] ? '✓' : ''}
+      </div>
+      <div class="layer-name">${orb}</div>
+      <div class="layer-count">${n.toLocaleString('fr')} pts</div>
+    `;
+    row.addEventListener('click', () => {
+      layerVisible[orb] = !layerVisible[orb];
+      row.classList.toggle('hidden-layer', !layerVisible[orb]);
+      row.querySelector('.layer-check').textContent = layerVisible[orb] ? '✓' : '';
+      updateAllBtn();
+      renderAll();
+    });
+    container.appendChild(row);
+  });
+  updateAllBtn();
+}
+
+function updateAllBtn() {
+  const allOn = Object.values(layerVisible).every(v => v);
+  const btn = document.getElementById('btn-all-layers');
+  btn.textContent = allOn ? 'aucun' : 'tout';
+}
+
+function toggleAllLayers() {
+  const allOn = Object.values(layerVisible).every(v => v);
+  Object.keys(layerVisible).forEach(k => layerVisible[k] = !allOn);
+  buildLayerToggles();
+  renderAll();
+}
+function updateLayerLegend() {
+  const container = document.getElementById('legend-layer-tags');
+  container.innerHTML = '';
+  allData.forEach(d => {
+    const color = ORB_CSS[d.orbital] || '#888';
+    const tag = document.createElement('div');
+    tag.className = 'orb-tag';
+    tag.innerHTML = `<div class="orb-dot" style="background:${color}"></div>${d.orbital}`;
+    container.appendChild(tag);
+  });
+}
+
+function clearMeshes() {
+  meshes.forEach(m => { scene.remove(m); m.geometry.dispose(); });
+  meshes = []; allData = []; layerVisible = {};
+  document.getElementById('debug-block').style.display = 'none';
+}
+
+function buildOrbitalCloud(data, orbitalKey) {
+  const n = data.x.length;
+  const positions  = new Float32Array(n*3);
+  const colorsDist = new Float32Array(n*3);
+  const colorsLayer= new Float32Array(n*3);
+  const zArr       = new Float32Array(n);
+
+  const tint = ORB_TINT[orbitalKey] || [0.5,0.5,0.5];
+  // Solid layer color from ORB_CSS hex → RGB
+  const hex = ORB_CSS[orbitalKey] || '#888888';
+  const lr = parseInt(hex.slice(1,3),16)/255;
+  const lg = parseInt(hex.slice(3,5),16)/255;
+  const lb = parseInt(hex.slice(5,7),16)/255;
+
+  for (let i=0; i<n; i++) {
+    positions[i*3]  =data.x[i]; positions[i*3+1]=data.y[i]; positions[i*3+2]=data.z[i];
+    zArr[i]=data.z[i];
+    // Blend distance gradient with orbital tint (70% gradient, 30% tint)
+    const [dr,dg,db]=distColor(data.r_norm[i]);
+    colorsDist[i*3]  =dr*0.7+tint[0]*0.3;
+    colorsDist[i*3+1]=dg*0.7+tint[1]*0.3;
+    colorsDist[i*3+2]=db*0.7+tint[2]*0.3;
+    // Pure layer color
+    colorsLayer[i*3]  =lr;
+    colorsLayer[i*3+1]=lg;
+    colorsLayer[i*3+2]=lb;
+  }
+
+  allData.push({ positions, zArr, colorsDist, colorsLayer, orbital: orbitalKey });
+}
+
+function renderAll() {
+  meshes.forEach(m => { scene.remove(m); m.geometry.dispose(); });
+  meshes = [];
+
+  allData.forEach(d => {
+    // Skip hidden layers
+    if (layerVisible[d.orbital] === false) return;
+    const n = d.positions.length/3;
+    const thickness = coupeActive ? 0.35e-10 : Infinity;
+
+    const idx=[];
+    for (let i=0;i<n;i++) {
+      if (!coupeActive || Math.abs(d.zArr[i]-coupeZ)<=thickness) idx.push(i);
+    }
+
+    const m=idx.length;
+    const pos=new Float32Array(m*3), col=new Float32Array(m*3);
+    const srcCol = colorMode === 'layer' ? d.colorsLayer : d.colorsDist;
+    idx.forEach((k,j)=>{
+      pos[j*3]=d.positions[k*3]; pos[j*3+1]=d.positions[k*3+1]; pos[j*3+2]=d.positions[k*3+2];
+      col[j*3]=srcCol[k*3];   col[j*3+1]=srcCol[k*3+1];   col[j*3+2]=srcCol[k*3+2];
+    });
+
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('color',   new THREE.BufferAttribute(col,3));
+
+    const mesh=new THREE.Points(geo,new THREE.PointsMaterial({
+      size: coupeActive ? 12e-12 : 8e-12,
+      vertexColors:true, transparent:true,
+      opacity: coupeActive ? 0.92 : 0.78,
+      sizeAttenuation:true,
+      map: SPRITE_TEX,
+      alphaTest: 0.05,
+      depthWrite: false
+    }));
+    scene.add(mesh);
+    meshes.push(mesh);
+  });
+}
+
+// Circular sprite texture for round points
+const _spriteCanvas = document.createElement('canvas');
+_spriteCanvas.width = _spriteCanvas.height = 64;
+const _ctx = _spriteCanvas.getContext('2d');
+const _grad = _ctx.createRadialGradient(32,32,0, 32,32,32);
+_grad.addColorStop(0,   'rgba(255,255,255,1)');
+_grad.addColorStop(0.45,'rgba(255,255,255,1)');
+_grad.addColorStop(1,   'rgba(255,255,255,0)');
+_ctx.fillStyle = _grad;
+_ctx.fillRect(0,0,64,64);
+const SPRITE_TEX = new THREE.CanvasTexture(_spriteCanvas);
+
+// Resize
+new ResizeObserver(()=>{
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}).observe(canvas);
+
+// Orbit
+let drag=false,lx=0,ly=0;
+canvas.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;});
+window.addEventListener('mouseup',()=>drag=false);
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  sph.theta-=(e.clientX-lx)*0.007;
+  sph.phi=Math.max(0.05,Math.min(Math.PI-0.05,sph.phi+(e.clientY-ly)*0.007));
+  lx=e.clientX;ly=e.clientY;camUpdate();
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  sph.r*=e.deltaY>0?1.12:0.89;camUpdate();
+},{passive:false});
+
+(function loop(){requestAnimationFrame(loop);renderer.render(scene,camera);})();
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentAtom = null;  // full atom data from server
+let selectedZ = 1;
+
+// ── Periodic table ────────────────────────────────────────────────────────────
+const ATOMS_STATIC = [
+  {Z:1, sym:"H",  name:"Hydrogène",  p:1, g:1},
+  {Z:2, sym:"He", name:"Hélium",     p:1, g:18},
+  {Z:3, sym:"Li", name:"Lithium",    p:2, g:1},
+  {Z:4, sym:"Be", name:"Béryllium",  p:2, g:2},
+  {Z:5, sym:"B",  name:"Bore",       p:2, g:13},
+  {Z:6, sym:"C",  name:"Carbone",    p:2, g:14},
+  {Z:7, sym:"N",  name:"Azote",      p:2, g:15},
+  {Z:8, sym:"O",  name:"Oxygène",    p:2, g:16},
+  {Z:9, sym:"F",  name:"Fluor",      p:2, g:17},
+  {Z:10,sym:"Ne", name:"Néon",       p:2, g:18},
+  {Z:11,sym:"Na", name:"Sodium",     p:3, g:1},
+  {Z:12,sym:"Mg", name:"Magnésium",  p:3, g:2},
+  {Z:13,sym:"Al", name:"Aluminium",  p:3, g:13},
+  {Z:14,sym:"Si", name:"Silicium",   p:3, g:14},
+  {Z:15,sym:"P",  name:"Phosphore",  p:3, g:15},
+  {Z:16,sym:"S",  name:"Soufre",     p:3, g:16},
+  {Z:17,sym:"Cl", name:"Chlore",     p:3, g:17},
+  {Z:18,sym:"Ar", name:"Argon",      p:3, g:18},
+];
+
+function buildPeriodicTable() {
+  const grid = document.getElementById('pt-grid');
+  grid.innerHTML = '';
+
+  for (let period=1; period<=3; period++) {
+    for (let group=1; group<=18; group++) {
+      const cell = document.createElement('div');
+      const atom = ATOMS_STATIC.find(a=>a.p===period && a.g===group);
+      if (atom) {
+        cell.className='pt-cell';
+        cell.dataset.z=atom.Z;
+        cell.innerHTML=`<span class="pt-z">${atom.Z}</span><span class="pt-sym">${atom.sym}</span><span class="pt-name">${atom.name}</span>`;
+        if (atom.Z===selectedZ) cell.classList.add('selected');
+        cell.addEventListener('click',()=>selectAtom(atom.Z));
+      } else {
+        cell.className='pt-cell empty';
+      }
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function openTableau()  { buildPeriodicTable(); document.getElementById('overlay').classList.add('open'); }
+function closeTableau() { document.getElementById('overlay').classList.remove('open'); }
+
+async function selectAtom(Z) {
+  selectedZ = Z;
+  document.querySelectorAll('.pt-cell').forEach(c=>{
+    c.classList.toggle('selected', parseInt(c.dataset.z)===Z);
+  });
+  closeTableau();
+
+  const base = document.getElementById('url-atom').value.replace(/\/$/,'');
+  try {
+    const res = await fetch(`${base}/atom?z=${Z}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    currentAtom = data;
+    updateAtomCard(data);
+  } catch(e) {
+    const a = ATOMS_STATIC.find(x=>x.Z===Z);
+    if (a) updateAtomCardStatic(a);
+  }
+}
+
+function updateAtomCard(data) {
+  document.getElementById('card-sym').textContent  = data.symbol;
+  document.getElementById('card-name').textContent = data.name;
+  document.getElementById('card-z').textContent    = `Z = ${data.Z}`;
+  document.getElementById('card-config').textContent = data.config;
+  updateOrbTags(data.orbitals);
+}
+
+function updateAtomCardStatic(a) {
+  document.getElementById('card-sym').textContent  = a.sym;
+  document.getElementById('card-name').textContent = a.name;
+  document.getElementById('card-z').textContent    = `Z = ${a.Z}`;
+  document.getElementById('card-config').textContent = '';
+  document.getElementById('orb-tags').innerHTML = '';
+}
+
+function updateOrbTags(orbitals) {
+  const container = document.getElementById('orb-tags');
+  container.innerHTML = '';
+  orbitals.forEach(o => {
+    const tag = document.createElement('div');
+    tag.className = 'orb-tag';
+    const color = ORB_CSS[o.orbital] || '#888';
+    tag.innerHTML = `<div class="orb-dot" style="background:${color}"></div>${o.orbital} (${o.electrons}e⁻)`;
+    container.appendChild(tag);
+  });
+}
+
+// ── Coupe ──────────────────────────────────────────────────────────────────────
+const btnCoupe = document.getElementById('btn-coupe');
+const coupeBlock = document.getElementById('coupe-block');
+const coupeSlider = document.getElementById('coupe-slider');
+
+btnCoupe.addEventListener('click',()=>{
+  coupeActive=!coupeActive;
+  btnCoupe.classList.toggle('active',coupeActive);
+  coupeBlock.classList.toggle('visible',coupeActive);
+  document.getElementById('coupe-icon').textContent=coupeActive?'◉':'⊘';
+  renderAll();
+});
+coupeSlider.addEventListener('input',()=>{
+  const v=parseFloat(coupeSlider.value);
+  document.getElementById('coupe-val').textContent=v.toFixed(1);
+  coupeZ=v*window._a0;
+  renderAll();
+});
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+document.getElementById('ns').addEventListener('input',()=>{
+  document.getElementById('nv').textContent=(+document.getElementById('ns').value).toLocaleString('fr');
+});
+
+async function generate() {
+  const err=document.getElementById('err');
+  err.style.display='none';
+  const btn=document.getElementById('btn');
+  btn.disabled=true;
+  btnCoupe.disabled=true;
+
+  const loader=document.getElementById('loader');
+  const loaderTxt=document.getElementById('loader-txt');
+  loader.classList.remove('hidden');
+
+  const baseOrb  = document.getElementById('url-orb').value.replace(/\/$/,'');
+  const baseAtom = document.getElementById('url-atom').value.replace(/\/$/,'');
+  const N = document.getElementById('ns').value;
+  const t0 = performance.now();
+
+  try {
+    if (!currentAtom || currentAtom.Z !== selectedZ) {
+      loaderTxt.textContent='Chargement config atome…';
+      const res = await fetch(`${baseAtom}/atom?z=${selectedZ}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      currentAtom = data;
+      updateAtomCard(data);
+    }
+
+    const orbitals = currentAtom.orbitals;
+    clearMeshes();
+
+    let totalPoints = 0;
+    let allHistoData = [];
+
+    for (let i=0; i<orbitals.length; i++) {
+      const orb = orbitals[i];
+      loaderTxt.textContent = `Orbitale ${orb.orbital} (${i+1}/${orbitals.length})…`;
+      const res = await fetch(`${baseOrb}/orbital?type=${orb.orbital}&n=${N}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status} pour ${orb.orbital}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      window._a0 = data.a0;
+      buildOrbitalCloud(data, orb.orbital);
+      totalPoints += data.n_points;
+      allHistoData.push({ label: orb.orbital, histogram: data.histogram });
+    }
+
+    loaderTxt.textContent='Rendu…';
+    await new Promise(r=>setTimeout(r,30));
+    updateLayerLegend();
+    buildLayerToggles();
+    renderAll();
+
+    coupeSlider.min=-20; coupeSlider.max=20; coupeSlider.value=0;
+    coupeZ=0;
+    document.getElementById('coupe-val').textContent='0.0';
+
+    const ms = Math.round(performance.now()-t0);
+    document.getElementById('sp').textContent = totalPoints.toLocaleString('fr');
+    document.getElementById('sm').textContent = ms;
+    document.getElementById('sb').style.display='block';
+
+    const hc=document.getElementById('histo');
+    hc.innerHTML='';
+    if (allHistoData.length>0) {
+      const first=allHistoData[0];
+      const maxC=Math.max(...first.histogram.map(h=>h.count));
+      first.histogram.forEach(h=>{
+        const row=document.createElement('div');
+        row.className='hr';
+        row.innerHTML=`<span>${h.from.toFixed(1)}–${h.to.toFixed(1)}</span>
+          <div class="bb"><div class="bf" style="width:0%"></div></div>
+          <span class="hn">${h.count}</span>`;
+        hc.appendChild(row);
+        requestAnimationFrame(()=>{ row.querySelector('.bf').style.width=(maxC>0?h.count/maxC*100:0)+'%'; });
+      });
+    }
+    document.getElementById('hb').style.display='block';
+
+    const badge=document.getElementById('badge');
+    badge.textContent=currentAtom.symbol;
+    badge.style.display='block';
+    btnCoupe.disabled=false;
+
+    if (coupeActive) {
+      coupeActive=false;
+      btnCoupe.classList.remove('active');
+      coupeBlock.classList.remove('visible');
+      document.getElementById('coupe-icon').textContent='⊘';
+    }
+
+  } catch(e) {
+    err.textContent=`Erreur : ${e.message}`;
+    err.style.display='block';
+  } finally {
+    loader.classList.add('hidden');
+    btn.disabled=false;
+  }
+}
+
+document.getElementById('btn').addEventListener('click', generate);
+
+(async ()=>{
+  const a=ATOMS_STATIC[0];
+  document.getElementById('card-sym').textContent=a.sym;
+  document.getElementById('card-name').textContent=a.name;
+  document.getElementById('card-z').textContent=`Z = ${a.Z}`;
+})();
+</script>
+</body>
+</html>
