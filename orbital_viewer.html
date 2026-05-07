@@ -218,39 +218,45 @@ main { position:relative; overflow:hidden; }
 
 <aside>
   <div class="title">Orbitales<br>Atomiques</div>
-  <div class="sub">Hydrogène → Argon</div>
+  <div class="sub">Systèmes hydrogénoïdes (1 électron)</div>
 
-  <!-- Atom selector -->
+  <!-- Ion selector -->
   <div class="block">
-    <div class="lbl">Atome sélectionné</div>
-    <div class="atom-card" id="atom-card" onclick="openTableau()">
-      <div class="atom-symbol" id="card-sym">H</div>
-      <div class="atom-info">
-        <div class="atom-name" id="card-name">Hydrogène</div>
-        <div class="atom-Z" id="card-z">Z = 1</div>
+    <div class="lbl">Système</div>
+    <div style="display:flex;flex-direction:column;gap:5px" id="ion-btns">
+      <div class="atom-card" id="ion-1" onclick="selectIon(1)">
+        <div class="atom-symbol">H</div>
+        <div class="atom-info">
+          <div class="atom-name">Hydrogène</div>
+          <div class="atom-Z">Z = 1 · neutre</div>
+        </div>
+      </div>
+      <div class="atom-card" id="ion-2" onclick="selectIon(2)">
+        <div class="atom-symbol">He⁺</div>
+        <div class="atom-info">
+          <div class="atom-name">Hélium ionisé</div>
+          <div class="atom-Z">Z = 2 · +1</div>
+        </div>
+      </div>
+      <div class="atom-card" id="ion-3" onclick="selectIon(3)">
+        <div class="atom-symbol">Li²⁺</div>
+        <div class="atom-info">
+          <div class="atom-name">Lithium doublement ionisé</div>
+          <div class="atom-Z">Z = 3 · +2</div>
+        </div>
       </div>
     </div>
-    <div class="atom-config" id="card-config">1s¹</div>
   </div>
 
-  <!-- Orbitals to display -->
-  <div class="block" id="orb-block">
-    <div class="lbl">Orbitales à afficher</div>
-    <div class="orb-tags" id="orb-tags"></div>
-  </div>
-
-  <!-- Debug: per-layer visibility -->
-  <div class="block" id="debug-block" style="display:none">
-    <div class="lbl" style="display:flex;align-items:center;justify-content:space-between">
-      <span>Visibilité par couche</span>
-      <button onclick="toggleAllLayers()" id="btn-all-layers" style="font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;background:transparent;border:1px solid var(--line);color:var(--sub);padding:2px 7px;cursor:pointer;border-radius:2px">tout</button>
-    </div>
-    <div id="layer-toggles" style="display:flex;flex-direction:column;gap:5px;margin-top:4px"></div>
+  <!-- Orbitale selector -->
+  <div class="block">
+    <div class="lbl">Orbitale</div>
+    <div class="orb-tags" id="orb-select-tags"></div>
   </div>
 
   <!-- Points -->
   <div class="block">
-    <div class="lbl">Points par orbitale</div>
+    <div class="lbl">Nombre de points</div>
     <div class="sr"><span>200</span><strong id="nv">1 500</strong><span>8 000</span></div>
     <input type="range" id="ns" min="200" max="8000" step="100" value="1500">
   </div>
@@ -263,27 +269,18 @@ main { position:relative; overflow:hidden; }
         ◉ Distance
       </button>
       <button class="btn-sec" id="btn-color-layer" onclick="setColorMode('layer')" style="flex:1;padding:7px 4px;font-size:9px">
-        ○ Couche
+        ○ Signe ψ
       </button>
     </div>
-    <!-- Legend distance -->
     <div id="legend-distance">
       <div class="legend-bar"></div>
       <div class="legend-labels"><span>proche</span><span>loin</span></div>
     </div>
-    <!-- Legend layer -->
     <div id="legend-layer" style="display:none">
-      <div class="orb-tags" id="legend-layer-tags"></div>
-    </div>
-  </div>
-
-  <!-- Servers -->
-  <div class="block">
-    <div class="lbl">Serveur orbitales (port 5000)</div>
-    <input class="url-inp" id="url-orb" value="http://localhost:5000">
-    <div style="margin-top:6px">
-      <div class="lbl" style="margin-bottom:4px">Serveur atomes (port 5001)</div>
-      <input class="url-inp" id="url-atom" value="http://localhost:5001">
+      <div style="display:flex;gap:8px;align-items:center;font-size:9px;color:var(--sub)">
+        <div style="display:flex;align-items:center;gap:4px"><div class="orb-dot" style="background:#E63333"></div>ψ &gt; 0</div>
+        <div style="display:flex;align-items:center;gap:4px"><div class="orb-dot" style="background:#265AF2"></div>ψ &lt; 0</div>
+      </div>
     </div>
   </div>
 
@@ -291,15 +288,9 @@ main { position:relative; overflow:hidden; }
   <div class="block" id="sb" style="display:none">
     <div class="lbl">Résultats</div>
     <div class="stats">
-      <div class="stat"><div class="v" id="sp">–</div><div class="l">points total</div></div>
+      <div class="stat"><div class="v" id="sp">–</div><div class="l">points</div></div>
       <div class="stat"><div class="v" id="sm">–</div><div class="l">ms</div></div>
     </div>
-  </div>
-
-  <!-- Histo -->
-  <div class="block" id="hb" style="display:none">
-    <div class="lbl">Distribution radiale (a₀)</div>
-    <div class="histo" id="histo"></div>
   </div>
 
   <div class="foot">
@@ -321,28 +312,8 @@ main { position:relative; overflow:hidden; }
     <div class="spinner"></div>
     <span id="loader-txt">Calcul en cours…</span>
   </div>
-  <button id="btn-tableau" onclick="openTableau()">⬡ Tableau</button>
   <div class="hint">clic : rotation · molette : zoom</div>
   <div class="badge" id="badge"></div>
-
-  <!-- Periodic table overlay -->
-  <div id="overlay">
-    <div class="overlay-header">
-      <div>
-        <div class="overlay-title">Tableau périodique</div>
-        <div class="overlay-sub">Atomes modélisés — Z = 1 à 18</div>
-      </div>
-      <button id="btn-close" onclick="closeTableau()">✕</button>
-    </div>
-    <div class="pt-grid" id="pt-grid"></div>
-    <div class="pt-legend">
-      <div class="pt-legend-item"><div class="pt-legend-dot c-1s"></div>sous-couche 1s</div>
-      <div class="pt-legend-item"><div class="pt-legend-dot c-2s"></div>sous-couche 2s</div>
-      <div class="pt-legend-item"><div class="pt-legend-dot c-2pz"></div>sous-couche 2p</div>
-      <div class="pt-legend-item"><div class="pt-legend-dot c-3s"></div>sous-couche 3s</div>
-      <div class="pt-legend-item"><div class="pt-legend-dot c-3pz"></div>sous-couche 3p</div>
-    </div>
-  </div>
 </main>
 
 <script>
@@ -389,10 +360,12 @@ const ORB_TINT = {
   '1s':  [0.23, 0.51, 1.0],
   '2s':  [0.06, 0.73, 0.51],
   '2pz': [0.96, 0.62, 0.17],
+  '2px': [1.0,  0.42, 0.42],
+  '2py': [0.65, 0.54, 0.98],
   '3s':  [0.94, 0.27, 0.27],
   '3pz': [0.55, 0.36, 0.96],
 };
-const ORB_CSS = { '1s':'#0061FF','2s':'#00FFA9','2pz':'#FFA000','3s':'#FF0000','3pz':'#824FFF' };
+const ORB_CSS = { '1s':'#0061FF','2s':'#00FFA9','2pz':'#FFA000','2px':'#FF6B6B','2py':'#A78BFA','3s':'#FF0000','3pz':'#824FFF' };
 
 // Store all point clouds per orbital
 let meshes = [];
@@ -413,70 +386,16 @@ function setColorMode(mode) {
 // Layer visibility state: orbital key → boolean
 let layerVisible = {};
 
-function buildLayerToggles() {
-  const block = document.getElementById('debug-block');
-  const container = document.getElementById('layer-toggles');
-  container.innerHTML = '';
-
-  if (allData.length === 0) { block.style.display = 'none'; return; }
-  block.style.display = '';
-
-  allData.forEach(d => {
-    const orb = d.orbital;
-    if (!(orb in layerVisible)) layerVisible[orb] = true;
-    const color = ORB_CSS[orb] || '#888';
-    const n = d.positions.length / 3;
-
-    const row = document.createElement('div');
-    row.className = 'layer-row' + (layerVisible[orb] ? '' : ' hidden-layer');
-    row.dataset.orb = orb;
-    row.innerHTML = `
-      <div class="layer-check" style="color:${color};border-color:${color}">
-        ${layerVisible[orb] ? '✓' : ''}
-      </div>
-      <div class="layer-name">${orb}</div>
-      <div class="layer-count">${n.toLocaleString('fr')} pts</div>
-    `;
-    row.addEventListener('click', () => {
-      layerVisible[orb] = !layerVisible[orb];
-      row.classList.toggle('hidden-layer', !layerVisible[orb]);
-      row.querySelector('.layer-check').textContent = layerVisible[orb] ? '✓' : '';
-      updateAllBtn();
-      renderAll();
-    });
-    container.appendChild(row);
-  });
-  updateAllBtn();
-}
-
-function updateAllBtn() {
-  const allOn = Object.values(layerVisible).every(v => v);
-  const btn = document.getElementById('btn-all-layers');
-  btn.textContent = allOn ? 'aucun' : 'tout';
-}
-
-function toggleAllLayers() {
-  const allOn = Object.values(layerVisible).every(v => v);
-  Object.keys(layerVisible).forEach(k => layerVisible[k] = !allOn);
-  buildLayerToggles();
-  renderAll();
-}
+function buildLayerToggles() {} // non utilisé
+function updateAllBtn() {}
+function toggleAllLayers() {}
 function updateLayerLegend() {
-  const container = document.getElementById('legend-layer-tags');
-  container.innerHTML = '';
-  allData.forEach(d => {
-    const color = ORB_CSS[d.orbital] || '#888';
-    const tag = document.createElement('div');
-    tag.className = 'orb-tag';
-    tag.innerHTML = `<div class="orb-dot" style="background:${color}"></div>${d.orbital}`;
-    container.appendChild(tag);
-  });
+  // legend-layer shows psi sign colors — no dynamic update needed
 }
 
 function clearMeshes() {
   meshes.forEach(m => { scene.remove(m); m.geometry.dispose(); });
   meshes = []; allData = []; layerVisible = {};
-  document.getElementById('debug-block').style.display = 'none';
 }
 
 function buildOrbitalCloud(data, orbitalKey) {
@@ -496,15 +415,17 @@ function buildOrbitalCloud(data, orbitalKey) {
   for (let i=0; i<n; i++) {
     positions[i*3]  =data.x[i]; positions[i*3+1]=data.y[i]; positions[i*3+2]=data.z[i];
     zArr[i]=data.z[i];
-    // Blend distance gradient with orbital tint (70% gradient, 30% tint)
+    // Distance gradient with orbital tint (70% gradient, 30% tint)
     const [dr,dg,db]=distColor(data.r_norm[i]);
     colorsDist[i*3]  =dr*0.7+tint[0]*0.3;
     colorsDist[i*3+1]=dg*0.7+tint[1]*0.3;
     colorsDist[i*3+2]=db*0.7+tint[2]*0.3;
-    // Pure layer color
-    colorsLayer[i*3]  =lr;
-    colorsLayer[i*3+1]=lg;
-    colorsLayer[i*3+2]=lb;
+    // Couche par signe de psi : rouge=psi>0, bleu=psi<0 (comme dans le Python)
+    if (data.psi && data.psi[i] > 0) {
+      colorsLayer[i*3]=0.9; colorsLayer[i*3+1]=0.25; colorsLayer[i*3+2]=0.2;
+    } else {
+      colorsLayer[i*3]=0.15; colorsLayer[i*3+1]=0.35; colorsLayer[i*3+2]=0.95;
+    }
   }
 
   allData.push({ positions, zArr, colorsDist, colorsLayer, orbital: orbitalKey });
@@ -588,102 +509,104 @@ canvas.addEventListener('wheel',e=>{
 (function loop(){requestAnimationFrame(loop);renderer.render(scene,camera);})();
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let currentAtom = null;  // full atom data from server
+let currentAtom = null;
 let selectedZ = 1;
 
-// ── Periodic table ────────────────────────────────────────────────────────────
-const ATOMS_STATIC = [
-  {Z:1, sym:"H",  name:"Hydrogène",  p:1, g:1},
-  {Z:2, sym:"He", name:"Hélium",     p:1, g:18},
-  {Z:3, sym:"Li", name:"Lithium",    p:2, g:1},
-  {Z:4, sym:"Be", name:"Béryllium",  p:2, g:2},
-  {Z:5, sym:"B",  name:"Bore",       p:2, g:13},
-  {Z:6, sym:"C",  name:"Carbone",    p:2, g:14},
-  {Z:7, sym:"N",  name:"Azote",      p:2, g:15},
-  {Z:8, sym:"O",  name:"Oxygène",    p:2, g:16},
-  {Z:9, sym:"F",  name:"Fluor",      p:2, g:17},
-  {Z:10,sym:"Ne", name:"Néon",       p:2, g:18},
-  {Z:11,sym:"Na", name:"Sodium",     p:3, g:1},
-  {Z:12,sym:"Mg", name:"Magnésium",  p:3, g:2},
-  {Z:13,sym:"Al", name:"Aluminium",  p:3, g:13},
-  {Z:14,sym:"Si", name:"Silicium",   p:3, g:14},
-  {Z:15,sym:"P",  name:"Phosphore",  p:3, g:15},
-  {Z:16,sym:"S",  name:"Soufre",     p:3, g:16},
-  {Z:17,sym:"Cl", name:"Chlore",     p:3, g:17},
-  {Z:18,sym:"Ar", name:"Argon",      p:3, g:18},
-];
+// ── Orbitale equations (portées depuis orbitale.py) ───────────────────────────
+const a0 = 5.29e-11;
 
-function buildPeriodicTable() {
-  const grid = document.getElementById('pt-grid');
-  grid.innerHTML = '';
+// Même logique que Probap() dans le Python
+function computeOrbital(N, Z, type) {
+  // Génération points gaussiens centrés sur 0, std = a0
+  const randn = () => {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random();
+    while(v === 0) v = Math.random();
+    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  };
 
-  for (let period=1; period<=3; period++) {
-    for (let group=1; group<=18; group++) {
-      const cell = document.createElement('div');
-      const atom = ATOMS_STATIC.find(a=>a.p===period && a.g===group);
-      if (atom) {
-        cell.className='pt-cell';
-        cell.dataset.z=atom.Z;
-        cell.innerHTML=`<span class="pt-z">${atom.Z}</span><span class="pt-sym">${atom.sym}</span><span class="pt-name">${atom.name}</span>`;
-        if (atom.Z===selectedZ) cell.classList.add('selected');
-        cell.addEventListener('click',()=>selectAtom(atom.Z));
-      } else {
-        cell.className='pt-cell empty';
-      }
-      grid.appendChild(cell);
+  const xArr = new Float64Array(N);
+  const yArr = new Float64Array(N);
+  const zArr2 = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    xArr[i] = randn() * a0;
+    yArr[i] = randn() * a0;
+    zArr2[i] = randn() * a0;
+  }
+
+  const psiArr = new Float64Array(N);
+
+  for (let i = 0; i < N; i++) {
+    const x = xArr[i], y = yArr[i], z = zArr2[i];
+    const r = Math.sqrt(x*x + y*y + z*z);
+    const cos_theta = r === 0 ? 0 : z / r;
+    const theta = r === 0 ? 0 : Math.acos(Math.max(-1, Math.min(1, cos_theta)));
+    const phi = Math.atan2(y, x);
+
+    let psi = 0;
+    if (type === '1s') {
+      const c = (1/Math.sqrt(Math.PI)) * Math.pow(Z/a0, 1.5);
+      psi = c * Math.exp(-Z*r/a0);
+    } else if (type === '2s') {
+      const c = (1/Math.sqrt(32*Math.PI)) * Math.pow(Z/a0, 1.5);
+      psi = c * Math.exp(-Z*r/(2*a0)) * (2 - Z*r/a0);
+    } else if (type === '3s') {
+      const c = (1/Math.sqrt(4*Math.PI)) * (2/(81*Math.sqrt(3))) * Math.pow(Z/a0, 1.5);
+      psi = c * Math.exp(-Z*r/(3*a0)) * (27 - 18*Z*r/a0 + 2*Math.pow(Z*r/a0, 2));
+    } else if (type === '2pz') {
+      const c = (1/Math.sqrt(32*Math.PI)) * Math.pow(Z/a0, 2.5);
+      psi = c * Math.exp(-Z*r/(2*a0)) * r * cos_theta;
+    } else if (type === '2px') {
+      const c = 1/Math.sqrt(32*Math.PI);
+      psi = c * Math.exp(-Z*r/(2*a0)) * r * Math.sin(theta) * Math.cos(phi);
+    } else if (type === '2py') {
+      const c = 1/Math.sqrt(32*Math.PI);
+      psi = c * Math.exp(-Z*r/(2*a0)) * r * Math.sin(theta) * Math.sin(phi);
     }
+    psiArr[i] = psi;
   }
+
+  // r_norm pour coloration (0→1)
+  let rMax = 0;
+  for (let i = 0; i < N; i++) {
+    const r = Math.sqrt(xArr[i]**2 + yArr[i]**2 + zArr2[i]**2);
+    if (r > rMax) rMax = r;
+  }
+
+  const xOut=[], yOut=[], zOut=[], r_norm=[], psiOut=[];
+  for (let i = 0; i < N; i++) {
+    xOut.push(xArr[i]);
+    yOut.push(yArr[i]);
+    zOut.push(zArr2[i]);
+    const r = Math.sqrt(xArr[i]**2 + yArr[i]**2 + zArr2[i]**2);
+    r_norm.push(rMax > 0 ? r/rMax : 0);
+    psiOut.push(psiArr[i]);
+  }
+  return { x: xOut, y: yOut, z: zOut, r_norm, psi: psiOut, a0 };
 }
 
-function openTableau()  { buildPeriodicTable(); document.getElementById('overlay').classList.add('open'); }
-function closeTableau() { document.getElementById('overlay').classList.remove('open'); }
+// Config électronique Z=1..18 → orbitales disponibles (uniquement celles du Python)
 
-async function selectAtom(Z) {
+// ── Periodic table ────────────────────────────────────────────────────────────
+// Supprimé — uniquement H, He+, Li2+
+
+function buildPeriodicTable() {}
+function openTableau()  {}
+function closeTableau() {}
+
+// ── Ion selection ─────────────────────────────────────────────────────────────
+const IONS = {
+  1: { sym:'H',   label:'Hydrogène',                   ion:'' },
+  2: { sym:'He⁺', label:'Hélium ionisé',               ion:'He⁺' },
+  3: { sym:'Li²⁺',label:'Lithium doublement ionisé',   ion:'Li²⁺' },
+};
+
+function selectIon(Z) {
   selectedZ = Z;
-  document.querySelectorAll('.pt-cell').forEach(c=>{
-    c.classList.toggle('selected', parseInt(c.dataset.z)===Z);
-  });
-  closeTableau();
-
-  const base = document.getElementById('url-atom').value.replace(/\/$/,'');
-  try {
-    const res = await fetch(`${base}/atom?z=${Z}`);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    currentAtom = data;
-    updateAtomCard(data);
-  } catch(e) {
-    const a = ATOMS_STATIC.find(x=>x.Z===Z);
-    if (a) updateAtomCardStatic(a);
-  }
-}
-
-function updateAtomCard(data) {
-  document.getElementById('card-sym').textContent  = data.symbol;
-  document.getElementById('card-name').textContent = data.name;
-  document.getElementById('card-z').textContent    = `Z = ${data.Z}`;
-  document.getElementById('card-config').textContent = data.config;
-  updateOrbTags(data.orbitals);
-}
-
-function updateAtomCardStatic(a) {
-  document.getElementById('card-sym').textContent  = a.sym;
-  document.getElementById('card-name').textContent = a.name;
-  document.getElementById('card-z').textContent    = `Z = ${a.Z}`;
-  document.getElementById('card-config').textContent = '';
-  document.getElementById('orb-tags').innerHTML = '';
-}
-
-function updateOrbTags(orbitals) {
-  const container = document.getElementById('orb-tags');
-  container.innerHTML = '';
-  orbitals.forEach(o => {
-    const tag = document.createElement('div');
-    tag.className = 'orb-tag';
-    const color = ORB_CSS[o.orbital] || '#888';
-    tag.innerHTML = `<div class="orb-dot" style="background:${color}"></div>${o.orbital} (${o.electrons}e⁻)`;
-    container.appendChild(tag);
-  });
+  document.querySelectorAll('#ion-btns .atom-card').forEach(c => c.style.borderColor='');
+  const card = document.getElementById('ion-'+Z);
+  if (card) card.style.borderColor = 'var(--ink)';
+  document.getElementById('badge').textContent = IONS[Z].sym;
 }
 
 // ── Coupe ──────────────────────────────────────────────────────────────────────
@@ -705,11 +628,38 @@ coupeSlider.addEventListener('input',()=>{
   renderAll();
 });
 
-// ── Generate ──────────────────────────────────────────────────────────────────
-document.getElementById('ns').addEventListener('input',()=>{
-  document.getElementById('nv').textContent=(+document.getElementById('ns').value).toLocaleString('fr');
-});
+// ── Orbital selector tags (pour choisir lesquelles afficher) ──────────────────
+let selectedOrbitals = new Set(['1s']);
 
+// Les 6 orbitales supportées (exactement celles du Python)
+const ALL_ORB_TYPES = ['1s','2s','3s','2pz','2px','2py'];
+
+function buildOrbSelectTags(Z) {
+  const container = document.getElementById('orb-select-tags');
+  container.innerHTML = '';
+  ALL_ORB_TYPES.forEach(type => {
+    const tag = document.createElement('div');
+    tag.className = 'orb-tag';
+    tag.style.cursor = 'pointer';
+    const active = selectedOrbitals.has(type);
+    const color = ORB_CSS[type] || '#888';
+    tag.style.borderColor = active ? color : 'var(--line)';
+    tag.style.background = active ? color+'22' : 'transparent';
+    tag.dataset.orb = type;
+    tag.innerHTML = `<div class="orb-dot" style="background:${color}"></div>${type}`;
+    tag.addEventListener('click', () => {
+      if (selectedOrbitals.has(type)) {
+        if (selectedOrbitals.size > 1) selectedOrbitals.delete(type);
+      } else {
+        selectedOrbitals.add(type);
+      }
+      buildOrbSelectTags(selectedZ);
+    });
+    container.appendChild(tag);
+  });
+}
+
+// ── Generate (calcul local, équations Python) ─────────────────────────────────
 async function generate() {
   const err=document.getElementById('err');
   err.style.display='none';
@@ -721,38 +671,23 @@ async function generate() {
   const loaderTxt=document.getElementById('loader-txt');
   loader.classList.remove('hidden');
 
-  const baseOrb  = document.getElementById('url-orb').value.replace(/\/$/,'');
-  const baseAtom = document.getElementById('url-atom').value.replace(/\/$/,'');
-  const N = document.getElementById('ns').value;
+  const N = parseInt(document.getElementById('ns').value);
   const t0 = performance.now();
 
   try {
-    if (!currentAtom || currentAtom.Z !== selectedZ) {
-      loaderTxt.textContent='Chargement config atome…';
-      const res = await fetch(`${baseAtom}/atom?z=${selectedZ}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      currentAtom = data;
-      updateAtomCard(data);
-    }
-
-    const orbitals = currentAtom.orbitals;
     clearMeshes();
-
+    const orbitals = [...selectedOrbitals];
     let totalPoints = 0;
-    let allHistoData = [];
 
     for (let i=0; i<orbitals.length; i++) {
-      const orb = orbitals[i];
-      loaderTxt.textContent = `Orbitale ${orb.orbital} (${i+1}/${orbitals.length})…`;
-      const res = await fetch(`${baseOrb}/orbital?type=${orb.orbital}&n=${N}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status} pour ${orb.orbital}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const type = orbitals[i];
+      loaderTxt.textContent = `Calcul orbitale ${type} (${i+1}/${orbitals.length})…`;
+      await new Promise(r=>setTimeout(r,10)); // allow UI update
+
+      const data = computeOrbital(N, selectedZ, type);
       window._a0 = data.a0;
-      buildOrbitalCloud(data, orb.orbital);
-      totalPoints += data.n_points;
-      allHistoData.push({ label: orb.orbital, histogram: data.histogram });
+      buildOrbitalCloud(data, type);
+      totalPoints += data.x.length;
     }
 
     loaderTxt.textContent='Rendu…';
@@ -770,25 +705,9 @@ async function generate() {
     document.getElementById('sm').textContent = ms;
     document.getElementById('sb').style.display='block';
 
-    const hc=document.getElementById('histo');
-    hc.innerHTML='';
-    if (allHistoData.length>0) {
-      const first=allHistoData[0];
-      const maxC=Math.max(...first.histogram.map(h=>h.count));
-      first.histogram.forEach(h=>{
-        const row=document.createElement('div');
-        row.className='hr';
-        row.innerHTML=`<span>${h.from.toFixed(1)}–${h.to.toFixed(1)}</span>
-          <div class="bb"><div class="bf" style="width:0%"></div></div>
-          <span class="hn">${h.count}</span>`;
-        hc.appendChild(row);
-        requestAnimationFrame(()=>{ row.querySelector('.bf').style.width=(maxC>0?h.count/maxC*100:0)+'%'; });
-      });
-    }
-    document.getElementById('hb').style.display='block';
 
     const badge=document.getElementById('badge');
-    badge.textContent=currentAtom.symbol;
+    badge.textContent = IONS[selectedZ] ? IONS[selectedZ].sym : '';
     badge.style.display='block';
     btnCoupe.disabled=false;
 
@@ -808,13 +727,15 @@ async function generate() {
   }
 }
 
+document.getElementById('ns').addEventListener('input',()=>{
+  document.getElementById('nv').textContent=(+document.getElementById('ns').value).toLocaleString('fr');
+});
+
 document.getElementById('btn').addEventListener('click', generate);
 
 (async ()=>{
-  const a=ATOMS_STATIC[0];
-  document.getElementById('card-sym').textContent=a.sym;
-  document.getElementById('card-name').textContent=a.name;
-  document.getElementById('card-z').textContent=`Z = ${a.Z}`;
+  selectIon(1);
+  buildOrbSelectTags(1);
 })();
 </script>
 </body>
