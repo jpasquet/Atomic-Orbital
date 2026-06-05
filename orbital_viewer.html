@@ -21,10 +21,10 @@ aside {
   background:var(--bg);
 }
 .title { font-family:'DM Serif Display',serif; font-size:18px; line-height:1.25; margin-bottom:3px; }
-.sub   { font-size:9px; color:var(--sub); letter-spacing:.14em; text-transform:uppercase; margin-bottom:30px; }
+.sub   { font-size:19px; color:var(--sub); letter-spacing:.14em; text-transform:uppercase; margin-bottom:30px; }
 
 .block { padding:16px 0; border-top:1px solid var(--line); }
-.lbl   { font-size:8px; text-transform:uppercase; letter-spacing:.15em; color:var(--sub); margin-bottom:10px; }
+.lbl   { font-size:19px; text-transform:uppercase; letter-spacing:.15em; color:var(--sub); margin-bottom:10px; }
 
 /* Atom display */
 .atom-card {
@@ -41,38 +41,38 @@ aside {
   line-height:1; min-width:36px; text-align:center;
 }
 .atom-info { display:flex; flex-direction:column; gap:2px; }
-.atom-name  { font-size:11px; }
-.atom-Z     { font-size:9px; color:var(--sub); }
-.atom-config { font-size:9px; color:var(--sub); margin-top:4px; line-height:1.5; }
+.atom-name  { font-size:17px; }
+.atom-Z     { font-size:19px; color:var(--sub); }
+.atom-config { font-size:19px; color:var(--sub); margin-top:4px; line-height:1.5; }
 
 /* Orbitals tags */
 .orb-tags { display:flex; flex-wrap:wrap; gap:5px; }
 .orb-tag {
-  font-size:10px; padding:3px 9px;
+  font-size:13px; padding:3px 19px;
   border:1px solid var(--line); border-radius:2px;
   display:flex; align-items:center; gap:5px;
 }
 .orb-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
 /* Slider */
-.sr { display:flex; justify-content:space-between; font-size:9px; color:var(--sub); margin-bottom:7px; }
+.sr { display:flex; justify-content:space-between; font-size:19px; color:var(--sub); margin-bottom:7px; }
 .sr strong { color:var(--ink); font-weight:400; }
 input[type=range] {
   -webkit-appearance:none; width:100%; height:1px;
   background:var(--line); outline:none; cursor:pointer;
 }
 input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; width:9px; height:9px; background:var(--ink); border-radius:50%;
+  -webkit-appearance:none; width:19px; height:19px; background:var(--ink); border-radius:50%;
 }
 
 /* Legend */
 .legend-bar { width:100%; height:5px; border-radius:3px; background:linear-gradient(to right,#1a237e,#1565c0,#00897b,#f9a825,#e53935); }
-.legend-labels { display:flex; justify-content:space-between; font-size:8px; color:var(--sub); margin-top:3px; }
+.legend-labels { display:flex; justify-content:space-between; font-size:15px; color:var(--sub); margin-top:3px; }
 
 /* URL */
 .url-inp {
   width:100%; border:1px solid var(--line); background:transparent;
-  color:var(--ink); font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--ink); font-family:'DM Mono',monospace; font-size:19px;
   padding:6px 8px; border-radius:2px; outline:none;
 }
 .url-inp:focus { border-color:var(--ink); }
@@ -81,11 +81,11 @@ input[type=range]::-webkit-slider-thumb {
 .stats { display:grid; grid-template-columns:1fr 1fr; }
 .stat { padding:8px 0 5px; border-top:1px solid var(--line); }
 .stat .v { font-family:'DM Serif Display',serif; font-size:16px; line-height:1; }
-.stat .l { font-size:7px; color:var(--sub); text-transform:uppercase; letter-spacing:.12em; margin-top:2px; }
+.stat .l { font-size:12px; color:var(--sub); text-transform:uppercase; letter-spacing:.12em; margin-top:2px; }
 
 /* Histo */
 .histo { display:flex; flex-direction:column; gap:4px; }
-.hr { display:grid; grid-template-columns:50px 1fr 26px; align-items:center; gap:7px; font-size:8px; color:var(--sub); }
+.hr { display:grid; grid-template-columns:50px 1fr 26px; align-items:center; gap:7px; font-size:17px; color:var(--sub); }
 .bb { height:1px; background:var(--line); overflow:hidden; }
 .bf { height:100%; background:var(--ink); transition:width .6s cubic-bezier(.4,0,.2,1); }
 .hn { text-align:right; color:var(--ink); }
@@ -101,14 +101,14 @@ input[type=range]::-webkit-slider-thumb {
 .layer-check {
   width:12px; height:12px; border:1px solid currentColor;
   border-radius:2px; display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; font-size:9px;
+  flex-shrink:0; font-size:19px;
 }
-.layer-name { font-size:10px; flex:1; }
-.layer-count { font-size:8px; color:var(--sub); }
+.layer-name { font-size:19px; flex:1; }
+.layer-count { font-size:19px; color:var(--sub); }
 .foot { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:6px; }
 .btn-main {
   width:100%; background:var(--ink); color:#fff; border:none;
-  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em;
+  font-family:'DM Mono',monospace; font-size:14px; letter-spacing:.12em;
   text-transform:uppercase; padding:11px; cursor:pointer; border-radius:2px; transition:opacity .13s;
 }
 .btn-main:hover { opacity:.7; }
@@ -116,7 +116,7 @@ input[type=range]::-webkit-slider-thumb {
 .btn-sec {
   width:100%; background:transparent; color:var(--ink);
   border:1px solid var(--line); font-family:'DM Mono',monospace;
-  font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+  font-size:19px; letter-spacing:.12em; text-transform:uppercase;
   padding:10px; cursor:pointer; border-radius:2px; transition:all .13s;
   display:flex; align-items:center; justify-content:center; gap:7px;
 }
@@ -125,7 +125,7 @@ input[type=range]::-webkit-slider-thumb {
 .btn-sec:disabled { opacity:.25; cursor:not-allowed; }
 #coupe-block { display:none; }
 #coupe-block.visible { display:block; }
-.err { margin-top:2px; font-size:8px; color:#b0291e; line-height:1.55; display:none; }
+.err { margin-top:2px; font-size:19px; color:#b0291e; line-height:1.55; display:none; }
 
 /* ── Canvas area ── */
 main { position:relative; overflow:hidden; }
@@ -133,7 +133,7 @@ main { position:relative; overflow:hidden; }
 #loader {
   position:absolute; inset:0; background:rgba(232,232,229,.88);
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-  font-size:9px; letter-spacing:.15em; text-transform:uppercase; color:var(--sub);
+  font-size:19px; letter-spacing:.15em; text-transform:uppercase; color:var(--sub);
   transition:opacity .25s;
 }
 #loader.hidden { opacity:0; pointer-events:none; }
@@ -143,14 +143,14 @@ main { position:relative; overflow:hidden; }
   animation:spin .7s linear infinite;
 }
 @keyframes spin { to { transform:rotate(360deg); } }
-.hint { position:absolute; bottom:14px; right:16px; font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:#b0b0aa; pointer-events:none; }
+.hint { position:absolute; bottom:14px; right:16px; font-size:19px; letter-spacing:.1em; text-transform:uppercase; color:#b0b0aa; pointer-events:none; }
 .badge { position:absolute; top:16px; left:16px; font-family:'DM Serif Display',serif; font-style:italic; font-size:28px; color:#d4d4cf; pointer-events:none; display:none; }
 
 /* ── Tableau button (top-right of canvas) ── */
 #btn-tableau {
   position:absolute; top:16px; right:16px;
   background:var(--bg); border:1px solid var(--line); color:var(--ink);
-  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em;
+  font-family:'DM Mono',monospace; font-size:19px; letter-spacing:.12em;
   text-transform:uppercase; padding:7px 13px; cursor:pointer;
   border-radius:2px; transition:all .13s; z-index:5;
 }
@@ -168,7 +168,7 @@ main { position:relative; overflow:hidden; }
   margin-bottom:20px;
 }
 .overlay-title { font-family:'DM Serif Display',serif; font-size:17px; }
-.overlay-sub   { font-size:8px; color:var(--sub); letter-spacing:.12em; text-transform:uppercase; }
+.overlay-sub   { font-size:19px; color:var(--sub); letter-spacing:.12em; text-transform:uppercase; }
 #btn-close {
   background:transparent; border:none; cursor:pointer;
   font-size:18px; color:var(--sub); line-height:1; padding:2px 4px;
@@ -196,10 +196,10 @@ main { position:relative; overflow:hidden; }
 .pt-cell:hover { border-color:var(--ink); background:#dededb; }
 .pt-cell.selected { background:var(--ink); border-color:var(--ink); color:#fff; }
 .pt-cell.empty { border-color:transparent; cursor:default; pointer-events:none; }
-.pt-z    { font-size:6px; color:var(--sub); line-height:1; align-self:flex-start; padding-left:2px; }
+.pt-z    { font-size:17px; color:var(--sub); line-height:1; align-self:flex-start; padding-left:2px; }
 .pt-sym  { font-family:'DM Serif Display',serif; font-size:13px; line-height:1.1; }
 .pt-cell.selected .pt-z { color:rgba(255,255,255,.6); }
-.pt-name { font-size:5.5px; color:var(--sub); text-align:center; line-height:1; margin-top:1px; overflow:hidden; white-space:nowrap; }
+.pt-name { font-size:11px; color:var(--sub); text-align:center; line-height:1; margin-top:1px; overflow:hidden; white-space:nowrap; }
 .pt-cell.selected .pt-name { color:rgba(255,255,255,.6); }
 
 .pt-legend { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; }
@@ -265,10 +265,10 @@ main { position:relative; overflow:hidden; }
   <div class="block">
     <div class="lbl">Mode de couleur</div>
     <div style="display:flex;gap:5px;margin-bottom:10px">
-      <button class="btn-sec active" id="btn-color-dist" onclick="setColorMode('distance')" style="flex:1;padding:7px 4px;font-size:9px">
+      <button class="btn-sec active" id="btn-color-dist" onclick="setColorMode('distance')" style="flex:1;padding:7px 4px;font-size:19px">
         ◉ Distance
       </button>
-      <button class="btn-sec" id="btn-color-layer" onclick="setColorMode('layer')" style="flex:1;padding:7px 4px;font-size:9px">
+      <button class="btn-sec" id="btn-color-layer" onclick="setColorMode('layer')" style="flex:1;padding:7px 4px;font-size:19px">
         ○ Signe ψ
       </button>
     </div>
@@ -277,7 +277,7 @@ main { position:relative; overflow:hidden; }
       <div class="legend-labels"><span>proche</span><span>loin</span></div>
     </div>
     <div id="legend-layer" style="display:none">
-      <div style="display:flex;gap:8px;align-items:center;font-size:9px;color:var(--sub)">
+      <div style="display:flex;gap:8px;align-items:center;font-size:19px;color:var(--sub)">
         <div style="display:flex;align-items:center;gap:4px"><div class="orb-dot" style="background:#E63333"></div>ψ &gt; 0</div>
         <div style="display:flex;align-items:center;gap:4px"><div class="orb-dot" style="background:#265AF2"></div>ψ &lt; 0</div>
       </div>
